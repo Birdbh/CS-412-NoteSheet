@@ -13,15 +13,18 @@
     *   **Supremum ($L_\infty$):** Maximum single-attribute difference.
 
 ## 2. Pattern Evaluation Formulas
-*   **Support:** $P(A \cup B)$ (Percentage of transactions containing both).
-*   **Confidence ($A \Rightarrow B$):** $P(B|A) = \frac{\text{Support}(A \cup B)}{\text{Support}(A)}$
-*   **Lift:** $\frac{P(A \cup B)}{P(A)P(B)}$ ( >1 positive correlation, <1 negative correlation, =1 independent). *Sensitive to null transactions.*
 *   **Support $(A \cup B)$**: The proportion of transactions containing $A$ and $B$.
 *   **Support $(A)$**: The proportion of transactions containing $A$.
 *   **Support $(B)$**: The proportion of transactions containing $B$.
-*   **Chi-Square ($\chi^2$):** $\sum \frac{(\text{Observed} - \text{Expected})^2}{\text{Expected}}$. *Sensitive to null transactions.*
-*   **Calculate Expected Frequency ($E_{ij}$):** Multiply the row total ($R_i$) by the column total ($C_j$) and divide by the total sample size ($N$): $E_{ij} = \frac{R_i \times C_j}{N}$
-*   **Kulczynski Measure:** $\frac{1}{2} (P(A|B) + P(B|A))$. *Null-invariant. Range [0,1].*
+*   **Confidence ($A \Rightarrow B$):** $P(B|A) = \frac{\text{sup}(A \cup B)}{\text{sup}(A)}$
+*   **Lift:** $\frac{P(A \cup B)}{P(A)P(B)}$ (Range: $[0, \infty]$). *Sensitive to null transactions.*
+*   **Chi-Square ($\chi^2$):** $\sum \frac{(\text{Observed} - \text{Expected})^2}{\text{Expected}}$ (Range: $[0, \infty]$). *Sensitive to null transactions.*
+    *   **Expected Frequency ($E_{ij}$):** $E_{ij} = \frac{R_i \times C_j}{N}$
+*   **AllConf:** $\frac{\text{sup}(A \cup B)}{\max\{\text{sup}(A), \text{sup}(B)\}}$ (Range: $[0, 1]$). *Null-invariant.*
+*   **Coherence:** $\frac{\text{sup}(A \cup B)}{\text{sup}(A) + \text{sup}(B) - \text{sup}(A \cup B)}$ (Range: $[0, 1]$). *Null-invariant.*
+*   **Cosine:** $\frac{\text{sup}(A \cup B)}{\sqrt{\text{sup}(A)\text{sup}(B)}}$ (Range: $[0, 1]$). *Null-invariant.*
+*   **Kulczynski (Kulc):** $\frac{\text{sup}(A \cup B)}{2} (\frac{1}{\text{sup}(A)} + \frac{1}{\text{sup}(B)})$ (Range: $[0, 1]$). *Null-invariant.*
+*   **MaxConf:** $\max \{ \frac{\text{sup}(A \cup B)}{\text{sup}(A)}, \frac{\text{sup}(A \cup B)}{\text{sup}(B)} \}$ (Range: $[0, 1]$). *Null-invariant.*
 
 ## 3. Algorithms & Concepts Quick Reference
 *   **KDD Process:** Pre-processing (Cleaning, Integration, Reduction, Transformation) $\rightarrow$ Pattern Discovery (Mining) $\rightarrow$ Post-Processing (Evaluation, Visualization).
@@ -32,6 +35,7 @@
     *   *Size Relationship:* {All} $\ge$ {Closed} $\ge$ {Max}.
 *   **Apriori:** Breadth-first. Uses **downward closure** (if an itemset is frequent, all subsets are frequent) to prune candidates.
 *   **FP-Growth:** Depth-first. No candidate generation. Uses an FP-tree and recursive conditional databases.
+* **FP-Tree Root Children:** 1) Build F-list (frequent items sorted descending by count, ties alphabetical), 2) Sort items *within each transaction* by the F-list, 3) The root's children are simply the **very first item** of each sorted transaction and their occurrence counts.
 *   **SPADE:** Sequential mining using vertical data format (TID lists) and set intersections.
 *   **PrefixSpan:** Sequential mining using pattern-growth. Uses **pseudo-projection** (pointers/offsets) to save memory.
 *   **Graph Mining (Apriori-based - AGM, FSG):** Vertex/edge growing. If a size-$k$ graph is frequent, all subgraphs must be frequent.
@@ -78,13 +82,3 @@
 *   **Graph Counting:** Can a subgraph appear more than once in a single graph in the database? Yes. Does each occurrence increase the support? No, no matter how many times the subgraph appears in a particular graph it will only increase the support of that subgraph by one.
 
 ***
-
-**Question 30**
-A store had 1,000 total transactions. 
-*   **400** transactions contained **Coffee**.
-*   **200** transactions contained **Tea**.
-*   **40** transactions contained **both** Coffee and Tea.
-
-We define a pair of items $\{A, B\}$ as a **negative pattern** under the null-invariant definition if $Kulc(A, B) < \epsilon$. 
-
-Which of the following values for $\epsilon$ is the **smallest** threshold listed below that would successfully classify {Coffee, Tea} as a negative pattern?
