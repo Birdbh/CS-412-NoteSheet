@@ -16,7 +16,11 @@
 *   **Support:** $P(A \cup B)$ (Percentage of transactions containing both).
 *   **Confidence ($A \Rightarrow B$):** $P(B|A) = \frac{\text{Support}(A \cup B)}{\text{Support}(A)}$
 *   **Lift:** $\frac{P(A \cup B)}{P(A)P(B)}$ ( >1 positive correlation, <1 negative correlation, =1 independent). *Sensitive to null transactions.*
+*   **Support $(A \cup B)$**: The proportion of transactions containing $A$ and $B$.
+*   **Support $(A)$**: The proportion of transactions containing $A$.
+*   **Support $(B)$**: The proportion of transactions containing $B$.
 *   **Chi-Square ($\chi^2$):** $\sum \frac{(\text{Observed} - \text{Expected})^2}{\text{Expected}}$. *Sensitive to null transactions.*
+*   **Calculate Expected Frequency ($E_{ij}$):** Multiply the row total ($R_i$) by the column total ($C_j$) and divide by the total sample size ($N$): $E_{ij} = \frac{R_i \times C_j}{N}$
 *   **Kulczynski Measure:** $\frac{1}{2} (P(A|B) + P(B|A))$. *Null-invariant. Range [0,1].*
 
 ## 3. Algorithms & Concepts Quick Reference
@@ -40,6 +44,32 @@
 *   **Data Anti-Monotone:** If transaction $T$ cannot satisfy $c$ for pattern $P$, it cannot satisfy $c$ for $P$'s supersets. Prunes data space.
 *   **Succinct:** Can enforce by directly manipulating data (e.g., dropping all items $> \$50$).
 *   **Convertible:** Becomes (anti-)monotone if items are sorted properly.
+  
+| Constraint | Anti-monotone | Monotone | Succinct | Convertible |
+| :--- | :---: | :---: | :---: | :--- |
+| $\min(S.A) \ge v$ | Yes | No | Yes | Strongly Yes |
+| $\min(S.A) \le v$ | No | Yes | Yes | Strongly Yes |
+| $\max(S.A) \ge v$ | No | Yes | Yes | Strongly Yes |
+| $\max(S.A) \le v$ | Yes | No | Yes | Strongly Yes |
+| $\text{count}(S) \le v$ | Yes | No | Weakly | Yes |
+| $\text{count}(S) \ge v$ | No | Yes | Weakly | Yes |
+| $\text{sum}(S.A) \le v \ (\forall i \in S, i.A \ge 0)$ | Yes | No | No | Yes |
+| $\text{sum}(S.A) \ge v \ (\forall i \in S, i.A \ge 0)$ | No | Yes | No | Yes |
+| $\text{sum}(S.A) \le v \ (v \ge 0, \forall i \in S, i.A \, \theta \, 0)$ | No | No | No | Yes (Anti-monotone) |
+| $\text{sum}(S.A) \ge v \ (v \ge 0, \forall i \in S, i.A \, \theta \, 0)$ | No | No | No | Yes (Monotone) |
+| $\text{sum}(S.A) \le v \ (v \le 0, \forall i \in S, i.A \, \theta \, 0)$ | No | No | No | Yes (Monotone) |
+| $\text{sum}(S.A) \ge v \ (v \le 0, \forall i \in S, i.A \, \theta \, 0)$ | No | No | No | Yes (Anti-monotone) |
+| $\text{range}(S.A) \le v$ | Yes | No | No | Strongly Yes |
+| $\text{range}(S.A) \ge v$ | No | Yes | No | Strongly Yes |
+| $\text{avg}(S.A) \, \theta \, v$ | No | No | No | Strongly Yes |
+| $\text{median}(S.A) \, \theta \, v$ | No | No | No | Strongly Yes |
+| $\text{var}(S.A) \ge v$ | No | No | No | Yes |
+| $\text{var}(S.A) \le v$ | No | No | No | Yes |
+| $\text{std}(S.A) \ge v$ | No | No | No | Yes |
+| $\text{std}(S.A) \le v$ | No | No | No | Yes |
+| $\text{var}^{N-1}(S.A) \, \theta \, v$ | No | No | No | Yes |
+| $\text{md}(S.A) \ge v$ | No | No | No | Yes |
+| $\text{md}(S.A) \le v$ | No | No | No | Yes |
 
 ## 5. Hand-Problem Reference & User Notes
 *   **Apriori Candidate Generation:** How do we determine candidate $k$-itemsets given frequent $(k-1)$-itemsets? By combining frequent all pairs of 2-itemsets with the same prefix, e.g., (A,C) and (A,E), and then pruning those which contain a subset of 2 items which are not frequent we can arrive at the final 3-itemset candidate pool. For example, (A,C) and (A,E) combine to make the candidate (A,C,E), however if (C,E) was not given as a frequent 2-itemset then we know (A,C,E) cannot be frequent and it is pruned.
@@ -48,3 +78,13 @@
 *   **Graph Counting:** Can a subgraph appear more than once in a single graph in the database? Yes. Does each occurrence increase the support? No, no matter how many times the subgraph appears in a particular graph it will only increase the support of that subgraph by one.
 
 ***
+
+**Question 30**
+A store had 1,000 total transactions. 
+*   **400** transactions contained **Coffee**.
+*   **200** transactions contained **Tea**.
+*   **40** transactions contained **both** Coffee and Tea.
+
+We define a pair of items $\{A, B\}$ as a **negative pattern** under the null-invariant definition if $Kulc(A, B) < \epsilon$. 
+
+Which of the following values for $\epsilon$ is the **smallest** threshold listed below that would successfully classify {Coffee, Tea} as a negative pattern?
