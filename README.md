@@ -23,7 +23,7 @@
 *   **AllConf:** $\frac{\text{sup}(A \cup B)}{\max\{\text{sup}(A), \text{sup}(B)\}}$ (Range: $[0, 1]$). *Null-invariant.*
 *   **Coherence:** $\frac{\text{sup}(A \cup B)}{\text{sup}(A) + \text{sup}(B) - \text{sup}(A \cup B)}$ (Range: $[0, 1]$). *Null-invariant.*
 *   **Cosine:** $\frac{\text{sup}(A \cup B)}{\sqrt{\text{sup}(A)\text{sup}(B)}}$ (Range: $[0, 1]$). *Null-invariant.*
-*   **Kulczynski (Kulc):** $\frac{\text{sup}(A \cup B)}{2} (\frac{1}{\text{sup}(A)} + \frac{1}{\text{sup}(B)})$ (Range: $[0, 1]$). *Null-invariant.*
+*   **Kulczynski (Kulc):** $\frac{\text{sup}(A \cup B)}{2} (\frac{1}{\text{sup}(A)} + \frac{1}{\text{sup}(B)})$ (Range: $[0, 1]$). *Null-invariant.* NEGATIVE PATTERN IF LESS THAN e
 *   **MaxConf:** $\max \{ \frac{\text{sup}(A \cup B)}{\text{sup}(A)}, \frac{\text{sup}(A \cup B)}{\text{sup}(B)} \}$ (Range: $[0, 1]$). *Null-invariant.*
 
 ## 3. Algorithms & Concepts Quick Reference
@@ -78,7 +78,7 @@
 ## 5. Hand-Problem Reference & User Notes
 *   **Apriori Candidate Generation:** How do we determine candidate $k$-itemsets given frequent $(k-1)$-itemsets? By combining frequent all pairs of 2-itemsets with the same prefix, e.g., (A,C) and (A,E), and then pruning those which contain a subset of 2 items which are not frequent we can arrive at the final 3-itemset candidate pool. For example, (A,C) and (A,E) combine to make the candidate (A,C,E), however if (C,E) was not given as a frequent 2-itemset then we know (A,C,E) cannot be frequent and it is pruned.
 *   **PrefixSpan Projection:** How would the sequence `<abe(f)(bcde)(ab)cf>` appear in the projected database for `c`? In the c-projected database the postfix of the sequence would be `<(_de)(ab)cf>` because we only consider the subsequence prefixed with the first occurrence of c. Note that it does not become `<(b_de)(ab)cf>` because PrefixSpan only considers the items alphabetically after the given prefix in order to avoid duplicate counting.
-*   **Sequential vs. Itemsets:** What is the difference between `ab` and `(ab)`? `ab` means `a` is bought, then `b` is bought (order matters). `(ab)` means `a` and `b` are bought at the same time (unordered internally). Gaps are allowed in subsequences: `(ab)dac` is a valid subsequence of `c(abd)edfa(cd)`.
+*   **Sequential vs. Itemsets:** What is the difference between `ab` and `(ab)`? `ab` means `a` is bought, then `b` is bought (order matters). `(ab)` means `a` and `b` are bought at the same time (unordered internally) AND NOTE SEQUENTIAL. Gaps are allowed in subsequences: `(ab)dac` is a valid subsequence of `c(abd)edfa(cd)`.
 *   **Graph Counting:** Can a subgraph appear more than once in a single graph in the database? Yes. Does each occurrence increase the support? No, no matter how many times the subgraph appears in a particular graph it will only increase the support of that subgraph by one.
 
 ***
