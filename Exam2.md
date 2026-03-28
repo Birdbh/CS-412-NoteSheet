@@ -34,3 +34,26 @@
 *   **Ground Truth Entropy $H(T)$:** Represents the entropy of the actual classes; calculated as $- \sum (P_{T_j} \ln P_{T_j})$ where $P_{T_j}$ is the probability of a point being in class $j$ (Ground Truth Column Sum / Total $N$).
 *   **Conditional Entropy $H(T|C)$:** Represents the entropy of the ground truth given the clustering; first calculate each row's individual entropy $H(T|C_i) = - \sum (p \ln p)$ where $p$ is (Cell Value / Cluster Row Sum), then calculate the final value by taking the weighted average of all rows $\sum (\frac{\text{Cluster Row Sum}}{N} \times H(T|C_i))$.
 
+### Hierarchical Linkage Methods & Strategies
+*   **Single Link:** Nearest neighbor (most similar members); handles non-elliptical shapes well but is highly sensitive to noise and outliers.
+*   **Complete Link:** Maximum diameter (most dissimilar members); forms highly compact clusters but is sensitive to outliers.
+*   **Average / Centroid Link:** Evaluates average distances or centroid distances between clusters; a robust compromise but computationally expensive.
+*   **Ward’s Criterion:** Merges clusters to minimize the increase in the Sum of Squared Errors (SSE); the most effective method for handling noisy data.
+*   **AGNES vs DIANA:** AGNES is bottom-up (agglomerative) continually merging the least dissimilar; DIANA is top-down (divisive) globally splitting macro-clusters.
+
+### Additional Partitioning Variations
+*   **K-Medians:** Uses medians and L1-norm (Manhattan distance) instead of means; handles outliers much better than K-Means.
+*   **K-Modes:** Designed for categorical data; replaces means with modes and uses a frequency-based dissimilarity measure (1 if different, 0 if same).
+
+### Validation Formulas & Metrics
+*   **Rand Statistic:** $(TP + TN) / \text{Total Pairs}$; a symmetric measure of pairwise agreement (perfect clustering = 1).
+*   **Jaccard Coefficient:** $TP / (TP + FP + FN)$; an asymmetric measure of agreement that ignores True Negatives (TN).
+*   **F-Measure:** The harmonic mean of precision and recall, where Precision = fraction of points from the majority partition, and Recall = fraction of the ground truth shared with the cluster.
+*   **Silhouette Coefficient:** $S_i = (b_i - a_i) / \max(a_i, b_i)$ where $a_i$ is mean intra-cluster distance and $b_i$ is mean nearest-cluster distance; ranges from -1 to 1 (close to +1 is optimal).
+*   **Beta-CV Measure:** Ratio of the mean intra-cluster distance to the mean inter-cluster distance; the smaller the value, the better the clustering.
+
+### Clustering Tendency & Assessment
+*   **Spatial Histogram:** Tests clustering tendency by comparing the data's empirical joint probability mass function (EPMF) against randomly sampled data using KL divergence.
+*   **Elbow Method:** Determines the optimal number of clusters ($K$) by finding the "turning point" in the curve of the sum of within-cluster variance.
+
+***
