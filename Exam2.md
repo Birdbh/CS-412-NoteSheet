@@ -55,3 +55,7 @@
 ### Clustering Tendency & Assessment
 *   **Spatial Histogram:** Tests clustering tendency by comparing the data's empirical joint probability mass function (EPMF) against randomly sampled data using KL divergence.
 *   **Elbow Method:** Determines the optimal number of clusters ($K$) by finding the "turning point" in the curve of the sum of within-cluster variance.
+
+### Entropy-Based Measures: Mutual Information & NMI
+*   **Mutual Information $I(C, T)$:** Measures the dependency between the observed joint probability $p_{ij}$ (clustering $C$ and partition $T$) and the expected joint probability $p_{C_i} \cdot p_{T_j}$. If they are completely independent, $p_{ij} = p_{C_i} \cdot p_{T_j}$ and $I(C, T) = 0$. 
+*   **Normalized Mutual Information (NMI):** Because standard Mutual Information $I(C,T)$ has no upper bound, NMI normalizes it to a strict value range of **[0, 1]**, where a value close to 1 indicates a good clustering.
