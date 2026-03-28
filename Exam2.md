@@ -29,4 +29,4 @@ Here is your highly condensed, one-line-per-entry bulleted cheat sheet covering 
 *   **FP (False Positive):** Calculate total pairs for each cluster row using row sum $R$, $\frac{R(R-1)}{2}$, sum them all together, and subtract the $TP$.
 *   **FN (False Negative):** Calculate total pairs for each ground truth column using col sum $C$, $\frac{C(C-1)}{2}$, sum them all together, and subtract the $TP$.
 *   **TN (True Negative):** Calculate total possible pairs in the entire dataset $\frac{N(N-1)}{2}$, and subtract $(TP + FP + FN)$.
-*   **Entropy:** For each row, calculate $e_i = - \sum (p \log p)$ where $p$ is (cell value / row sum), then calculate total conditional entropy by taking the weighted average of all $e_i$ values based on row sizes ($\sum (\frac{\text{row sum}}{N} \times e_i)$).
+*   **Entropy:** For each row, calculate $e_i = - \sum (p \log p)$ where $p$ is (cell value / row sum), then calculate total conditional entropy by taking the weighted average of all $e_i$ values based on row sizes ($\sum (\frac{\text{row sum}}{N} \times e_i)$)
