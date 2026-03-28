@@ -1,5 +1,3 @@
-Here is your highly condensed, one-line-per-entry bulleted cheat sheet covering all your requested constraints:
-
 ### Clustering Algorithms (Complexity | Type | Description | Non-Convexity)
 *   **K-Means:** $O(tKn)$ | Partitioning | Iteratively updates centroids to minimize Sum of Squared Errors (SSE) | Cannot handle non-convex data.
 *   **Kernel K-Means:** Higher than $O(N^2)$ | Partitioning | Maps data to high-dimensional space using kernels (Polynomial, Gaussian RBF, Sigmoid) to separate linearly inseparable data | CAN handle non-convex data.
