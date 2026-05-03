@@ -15,6 +15,7 @@
 * **Information Gain:** $InfoGain(A) = H(Y) - H(Y|A)$ | Expected reduction in entropy caused by partitioning on attribute $A$; split on the attribute with the max InfoGain.
 * **Maximal Leaf Nodes:** $\min(N, 2^K)$ | For $N$ data points and $K$ binary features, representing the absolute maximum complexity of the tree.
 * **Overfitting Management:** Controlled via **Pre-pruning** (halting growth early based on constraints) or **Post-pruning** (removing branches after growth if validation accuracy drops).
+* **RainForest Algorithm:** A framework for fast decision tree construction on large datasets that cannot fit in main memory. It separates the scalability of the tree construction from the split evaluation by maintaining an **AVC-set** (Attribute-Value, Class label) structure at each node. This AVC-set holds the aggregated frequency statistics needed to calculate Information Gain/Entropy, allowing the tree to be built without keeping the raw data in memory.
 
 ### Ensemble Methods
 * **Bagging (Bootstrap Aggregating):** Trains base models independently on random subsamples (with replacement) to reduce variance.
