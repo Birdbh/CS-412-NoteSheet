@@ -30,6 +30,9 @@
 * **Bayes Theorem:** $P(C|X) = \frac{P(X|C) P(C)}{P(X)}$ | Computes the posterior probability of class $C$ given observation $X$.
 * **Naïve Bayes Assumption:** $P(X|C) = \prod_{i=1}^{n} P(x_i|C)$ | Assumes all attributes are conditionally independent given the class label. Faster but rarely strictly true in reality.
 * **Bayesian Networks:** Directed Acyclic Graphs (DAGs) representing joint probability distributions and conditional independences. Can be simplified visually using Plate Notation.
+* **Cascade (Chain Structure):** $A \rightarrow C \rightarrow B$ | If $C$ is known, the path is blocked, meaning $A$ and $B$ are conditionally **independent** ($A \perp B \mid C$). If $C$ is unknown, $A$ and $B$ are dependent.
+* **Common Parent (Fork Structure):** $A \leftarrow C \rightarrow B$ | If the common cause $C$ is known, the path is blocked, meaning $A$ and $B$ are conditionally **independent** ($A \perp B \mid C$). If $C$ is unknown, they are dependent.
+* **V-Structure (Common Child / Collider):** $A \rightarrow C \leftarrow B$ | If $C$ (or any of its descendants) is known, the path *opens*, meaning $A$ and $B$ become conditionally **dependent** (a phenomenon known as "explaining away"). If $C$ is unknown, $A$ and $B$ are strictly **independent** ($A \perp B$).
 
 ### Linear Classifiers & SVM
 * **Linear Classifier:** $W^T X + b = 0$ | Represents a separating hyperplane used for binary classification.
