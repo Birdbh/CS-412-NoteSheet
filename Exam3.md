@@ -11,6 +11,7 @@
 
 ### Decision Trees & Information Theory
 * **Entropy:** $H(Y) = -\sum (p_i \log_2(p_i))$ | Measure of uncertainty; lower entropy = lower uncertainty.
+* **Conditional Entropy $H(T|C)$:** Represents the entropy of the ground truth given the clustering; first calculate each row's individual entropy $H(T|C_i) = - \sum (p \ln p)$ where $p$ is (Cell Value / Cluster Row Sum), then calculate the final value by taking the weighted average of all rows $\sum (\frac{\text{Cluster Row Sum}}{N} \times H(T|C_i))$.
 * **Information Gain:** $InfoGain(A) = H(Y) - H(Y|A)$ | Expected reduction in entropy caused by partitioning on attribute $A$; split on the attribute with the max InfoGain.
 * **Maximal Leaf Nodes:** $\min(N, 2^K)$ | For $N$ data points and $K$ binary features, representing the absolute maximum complexity of the tree.
 * **Overfitting Management:** Controlled via **Pre-pruning** (halting growth early based on constraints) or **Post-pruning** (removing branches after growth if validation accuracy drops).
