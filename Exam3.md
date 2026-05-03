@@ -43,6 +43,7 @@
 * **SVM Objective:** Searches for the Maximum Marginal Hyperplane (MMH) to separate classes with the largest possible margin. Defended by **Support Vectors** (critical data points at the boundary).
 * **Logistic Regression:** $P(Y=1|X) = \frac{1}{1 + e^{-(W^T X + b)}}$ | Predicts probability using the Sigmoid function.
 * **Gradient Descent:** Iterative algorithm moving in the direction of the negative gradient to minimize a cost function (e.g., negative log-likelihood).
+* **Selective Declustering (CB-SVM):** Handles class imbalance by clustering the majority class to reduce its size, but intentionally "declusters" (expands) macro-clusters near the decision boundary to maintain high precision for finding support vectors.
 
 ### Neural Networks & Deep Learning
 * **Perceptron:** $y = f(W^T X + b)$ | A single neuron combining weights, bias, and a non-linear activation function $f$. Multiple layers required for non-linear problems like XOR.
