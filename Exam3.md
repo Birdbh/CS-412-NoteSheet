@@ -16,6 +16,10 @@
 * **Maximal Leaf Nodes:** $\min(N, 2^K)$ | For $N$ data points and $K$ binary features, representing the absolute maximum complexity of the tree.
 * **Overfitting Management:** Controlled via **Pre-pruning** (halting growth early based on constraints) or **Post-pruning** (removing branches after growth if validation accuracy drops).
 * **RainForest Algorithm:** A framework for fast decision tree construction on large datasets that cannot fit in main memory. It separates the scalability of the tree construction from the split evaluation by maintaining an **AVC-set** (Attribute-Value, Class label) structure at each node. This AVC-set holds the aggregated frequency statistics needed to calculate Information Gain/Entropy, allowing the tree to be built without keeping the raw data in memory.
+* **Gain Ratio:** $Gain(A) / SplitInfo(A)$ | Overcomes Information Gain's bias toward attributes with a large number of distinct values (used in C4.5). $SplitInfo(A) = -\sum \frac{|D_j|}{|D|} \log_2 \frac{|D_j|}{|D|}$ acts as a penalty term.
+* **Gini Index:** $1 - \sum p_i^2$ | A measure of dataset impurity used in CART algorithms. Lower Gini = lower impurity (more homogeneous). The best split maximizes the reduction in impurity: $\Delta Gini(A) = Gini(D) - Gini_A(D)$.
+* **Chi-Squared ($\chi^2$) Statistic:** $\sum \frac{(O - E)^2}{E}$ | Used by CHAID to test for statistical independence between a candidate attribute and the class label. Helps prevent overfitting by stopping splits if the association is not statistically significant.
+* **Minimum Description Length (MDL):** $\text{Cost(Tree)} + \text{Cost(Data|Tree)}$ | An information-theoretic selection measure based on Occam's Razor. Evaluates alternative splits by favoring the model that requires the fewest bits to encode both the tree structure itself and any misclassification errors.
 
 ### Ensemble Methods
 * **Bagging (Bootstrap Aggregating):** Trains base models independently on random subsamples (with replacement) to reduce variance.
