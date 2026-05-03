@@ -33,6 +33,9 @@
 * **Cascade (Chain Structure):** $A \rightarrow C \rightarrow B$ | If $C$ is known, the path is blocked, meaning $A$ and $B$ are conditionally **independent** ($A \perp B \mid C$). If $C$ is unknown, $A$ and $B$ are dependent.
 * **Common Parent (Fork Structure):** $A \leftarrow C \rightarrow B$ | If the common cause $C$ is known, the path is blocked, meaning $A$ and $B$ are conditionally **independent** ($A \perp B \mid C$). If $C$ is unknown, they are dependent.
 * **V-Structure (Common Child / Collider):** $A \rightarrow C \leftarrow B$ | If $C$ (or any of its descendants) is known, the path *opens*, meaning $A$ and $B$ become conditionally **dependent** (a phenomenon known as "explaining away"). If $C$ is unknown, $A$ and $B$ are strictly **independent** ($A \perp B$).
+* **Zero-Probability Problem:** In Naïve Bayes, if a specific attribute value never occurs for a given class in the training data, its conditional probability becomes zero. Because probabilities are multiplied, this single zero ruins the entire prediction.
+* **Laplacian Correction (Laplace Smoothing):** Solves the zero-probability problem by adding 1 to every count so that no probability is ever strictly zero. 
+* **Laplacian Formula:** $P(x_i|C) = \frac{\text{count}(x_i, C) + 1}{\text{count}(C) + |V|}$ | Where $\text{count}(x_i, C)$ is the number of times attribute value $x_i$ appears in class $C$, $\text{count}(C)$ is the total number of items in class $C$, and $|V|$ is the total number of distinct values that attribute $x$ can take.
 
 ### Linear Classifiers & SVM
 * **Linear Classifier:** $W^T X + b = 0$ | Represents a separating hyperplane used for binary classification.
