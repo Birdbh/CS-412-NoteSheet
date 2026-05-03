@@ -9,6 +9,7 @@
 * **ROC Curve:** Plots True Positive Rate (Sensitivity) vs. False Positive Rate ($1 - \text{Specificity}$). Closer to top-left is better; different points are obtained by changing the decision threshold.
 * **Small Dataset Evaluation:** Use Leave-one-out cross-validation or $.632$ Bootstrap instead of standard holdout methods.
 * **.632 Bootstrap:** A robust method for small datasets. You create a training set by sampling $N$ instances uniformly with replacement from the original data. The probability of an instance *not* being chosen is $(1 - 1/N)^N \approx 0.368$, meaning the training set contains roughly $63.2\%$ of the original unique data points, and the remaining $36.8\%$ form the test set. The overall accuracy is calculated as: $Acc = 0.632 \times Acc_{test} + 0.368 \times Acc_{train}$.
+* **Multi-Class Classification:** **One-vs-All** builds $m$ classifiers (each class vs. the rest); **One-vs-One** builds $m(m-1)/2$ binary classifiers (every possible pair) and uses voting to predict, generally performing better.
 
 ### Decision Trees & Information Theory
 * **Entropy:** $H(Y) = -\sum (p_i \log_2(p_i))$ | Measure of uncertainty; lower entropy = lower uncertainty.
