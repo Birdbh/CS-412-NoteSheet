@@ -1,0 +1,236 @@
+
+---
+
+## 1. Network Math, Unit Conversions & Delays
+
+### 1.1 Base Math & Units
+* **Network Speeds (Base-10):** 1 Kbps = $10^3$ bps | 1 Mbps = $10^6$ bps | 1 Gbps = $10^9$ bps
+* **Storage/Data (Base-2):** 1 Byte (B) = 8 bits (b)
+* **Quick Conversion:** `Mbps / 8 = MB/s`. (e.g., 100 Mbps = 12.5 MB/s).
+* **Transmission Time of a Packet:**
+    * *Formula:* $d_{trans} = \frac{L}{R}$ (L = bits, R = bps)
+    * *Example:* 64-byte packet over 40 Gbps link $\rightarrow \frac{64 \times 8}{40 \times 10^9} = 12.8 \text{ ns}$.
+
+### 1.2 Delay & Utilization Formulas
+* **Propagation Delay ($d_{prop}$):** $d_{prop} = \frac{D}{S}$
+    * *D* = distance (meters). *S* = speed of medium ($\approx 2 \times 10^8$ m/s for fiber).
+* **Total Nodal Delay:** $d_{nodal} = d_{proc} + d_{queue} + d_{trans} + d_{prop}$
+* **Bandwidth-Delay Product (BDP):** Volume of data required to keep a link 100% full.
+    * $BDP \text{ (bits)} = \text{Bandwidth (bps)} \times \text{RTT (sec)}$
+    * *Divide by 8* to determine the necessary TCP Receiver Window Size (in Bytes) for maximum utilization.
+
+### 1.3 MTU & IP Fragmentation Math
+* **Standard Ethernet MTU:** 1500 bytes.
+* **Max Segment Size (MSS):** MTU - (IP Header + TCP Header). Standard MSS = 1500 - 20 - 20 = **1460 bytes**.
+* **IP Fragmentation Offset:** Used to reassemble fragmented packets. 
+    * *Rule:* Offset is measured in **8-byte blocks**.
+    * *Formula:* $\text{Offset Value} = \frac{\text{Byte offset of data}}{8}$
+
+---
+
+## 2. Packet Headers: Fields & Functions
+
+### 2.1 IPv4 Header (20 Bytes minimum)
+| Field | Size | Function / Description |
+| :--- | :--- | :--- |
+| **Version/IHL** | 4b/4b | IPv4 (4). IHL specifies header length in 32-bit words (Standard = 5 words = 20 Bytes). |
+| **ToS (Type of Service)**| 8 bits | Differentiated services / ECN bits (used by DCTCP). |
+| **Total Length** | 16 bits | Size of entire packet (header + payload) in bytes. |
+| **Identification** | 16 bits | Unique ID for fragmented packets. |
+| **Flags** | 3 bits | DF (Don't Fragment), MF (More Fragments). |
+| **Fragment Offset**| 13 bits | Position of fragment in original payload (in 8-byte units). |
+| **TTL (Time to Live)** | 8 bits | Decrements every hop. Drops at 0. **Used by Traceroute**. |
+| **Protocol** | 8 bits | Upper layer protocol: ICMP(1), TCP(6), UDP(17). |
+| **Header Checksum**| 16 bits | Verifies header integrity (not payload). |
+| **Source / Dest IP** | 32b/32b | Logical $L3$ routing addresses. |
+
+### 2.2 TCP Header (20 Bytes minimum)
+| Field | Size | Function / Description |
+| :--- | :--- | :--- |
+| **Source/Dest Port** | 16b/16b | Multiplexing identifiers for application processes. |
+| **Sequence Number** | 32 bits | Byte offset of the first byte of data in this segment. |
+| **Acknowledgment No.**| 32 bits | The *next* byte the receiver expects to receive. |
+| **Header Len / Flags**| 4b/12b | SYN, ACK, FIN, RST, PSH, URG. |
+| **Window Size** | 16 bits | Flow control: Receiver Window Size (RWS) - bytes willing to accept. |
+| **Checksum / Urgent** | 16b/16b | Error checking across header and payload. |
+
+### 2.3 UDP Header (8 Bytes)
+* **Fields:** Source Port (16b), Dest Port (16b), Length (16b), Checksum (16b).
+* **Properties:** Connectionless, no flow/congestion control, ultra-low overhead. Used for DNS, NTP, and real-time streaming.
+
+---
+
+## 3. Network Architecture & Routing Algorithms
+
+### 3.1 Data Plane vs. Control Plane
+* **Data Plane (The Muscle):** Nanosecond timescale. ASIC hardware. Parses headers, performs longest prefix match (LPM), and forwards packets to output ports.
+* **Control Plane (The Brain):** Millisecond to minute timescale. General-purpose CPUs. Runs routing algorithms (OSPF, BGP) to populate the Data Plane's forwarding tables (FIB).
+
+### 3.2 Inside the Switch: Queuing
+* **Input Queuing:** Suffers from **Head-of-Line (HoL) blocking** (blocked packet at front prevents remaining packets from moving).
+* **Output Queuing:** Solves HoL blocking but requires the switch fabric to run $N \times$ faster than the links.
+
+### 3.3 Routing Algorithms
+#### Link State (e.g., OSPF)
+* **Mechanism:** Floods local link state to the *global* network. Every node builds a full graph and runs Dijkstra.
+* **Dijkstra's Time Complexity:** $O((n+m) \log n)$ where $n=$ nodes, $m=$ edges (using a priority queue).
+
+#### Distance Vector (e.g., RIP, EIGRP)
+* **Mechanism:** Shares global (best-known) distances with *local* neighbors.
+* **Bellman-Ford Equation:** $$D(w) = \min_n \{ c(v,n) + M_n(w) \}$$
+    *(Distance to w = minimum over all neighbors n of cost to n + n's reported distance to w)*.
+
+#### Border Gateway Protocol (BGP)
+* **Type:** Path Vector (shares full AS path to prevent loops).
+* **Policy Routing:** Best route chosen via local policy, NOT shortest path. Priority order:
+    1. Highest **LocalPref** (determines outbound traffic path).
+    2. Shortest **AS-Path** length.
+    3. Lowest MED (Multi-Exit Discriminator).
+    4. eBGP over iBGP.
+
+---
+
+## 4. Transport Layer: Sliding Windows & Congestion
+
+### 4.1 Sliding Window Math
+* **SWS (Sender Window Size):** Max un-ACKed data in flight.
+* **RWS (Receiver Window Size):** Max out-of-order data buffer.
+* **Sequence Number Space Rule:** To prevent wrapping overlap bugs, the total sequence numbers available must be:
+    $$\text{SeqNum Space} \ge SWS + RWS$$
+
+### 4.2 TCP Congestion Control
+TCP uses packet loss as the primary signal of congestion.
+1.  **Slow Start:** Congestion Window (`cwnd`) starts at 1 MSS.
+    * *Equation:* `cwnd` doubles every RTT. (+1 MSS per ACK received).
+2.  **AIMD (Additive Increase, Multiplicative Decrease):** * *Additive Increase (No loss):* $cwnd \leftarrow cwnd + 1 \text{ MSS per RTT}$
+    * *Multiplicative Decrease (Loss):* $cwnd \leftarrow \frac{cwnd}{2}$
+
+### 4.3 TCP Incast & Data Center TCP (DCTCP)
+* **TCP Incast:** Sudden buffer overflow when many workers send data simultaneously to a single aggregator (Scatter-Gather workload). TCP severely underperforms due to timeout delays.
+* **DCTCP Solution:** Uses ECN (Explicit Congestion Notification). Instead of halving the window blindly, DCTCP cuts the window proportionally to the *fraction* of congestion.
+* **DCTCP Alpha ($\alpha$) Calculation:**
+    $$\alpha \leftarrow (1 - g) \times \alpha + g \times F$$
+    *(g = weight factor, F = fraction of marked ECN packets in the window)*
+* **DCTCP Window Decrease:**
+    $$cwnd \leftarrow cwnd \times \left(1 - \frac{\alpha}{2}\right)$$
+
+### 4.4 Cloud Workloads & Tail Latency
+Scale magnifies tail latency. If one task out of thousands is slow, the entire job is delayed.
+* Let $p = \text{Probability a single task finishes on time (e.g., } \le 42 \text{ms})$.
+* Let $n = \text{Number of parallel tasks}$.
+* **Probability the entire job is delayed (fails deadline):**
+    $$Pr[Job > 42\text{ms}] = 1 - p^n$$
+
+---
+
+## 5. Data Center Topology: Fat-Tree / Clos
+
+Legacy tree networks have severe oversubscription for "East-West" (server-to-server) traffic. Modern DCs use non-blocking Clos networks (Fat-Trees) to provide 1:1 bandwidth via Equal Cost Multi-Path (ECMP).
+
+### 5.1 $K$-Port Fat-Tree Formulas
+Given a 3-tier topology where every switch has **$k$ ports**:
+
+| Metric | Formula |
+| :--- | :--- |
+| **Number of Pods** | $k$ |
+| **Edge (ToR) Switches per Pod** | $\frac{k}{2}$ |
+| **Agg Switches per Pod** | $\frac{k}{2}$ |
+| **Total Core Switches** | $\left(\frac{k}{2}\right)^2$ |
+| **Total Switches in Network** | $\frac{5k^2}{4}$ |
+| **Total Hosts Supported** | $\frac{k^3}{4}$ |
+| **ECMP Paths between pods** | $\left(\frac{k}{2}\right)^2$ |
+
+### 5.2 Clos Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph Spine/Core Tier
+        C1[Core 1]
+        C2[Core 2]
+        C3[Core 3]
+        C4[Core 4]
+    end
+
+    subgraph Pod 1
+        A1[Agg 1]
+        A2[Agg 2]
+        E1[Edge/ToR 1]
+        E2[Edge/ToR 2]
+        H1((Host))
+        H2((Host))
+        
+        A1 --- E1
+        A1 --- E2
+        A2 --- E1
+        A2 --- E2
+        E1 --- H1
+        E1 --- H2
+    end
+    
+    C1 --- A1
+    C1 --- A2
+    C2 --- A1
+    C2 --- A2
+```
+
+---
+
+## 6. SDN, Virtualization, and Overlays
+
+### 6.1 Multi-Tenant Tunneling (Overlay Networks)
+SDN uses encapsulation (tunnels like VXLAN/GRE) over the physical underlay to create isolated tenant networks.
+* If a tenant has **$V$ Virtual Machines (VMs)** that require a full mesh of tunnels:
+    * **Unidirectional Tunnels required:** $V \times (V - 1)$
+    * **Bidirectional Tunnels required:** $\frac{V \times (V - 1)}{2}$
+
+### 6.2 Host Virtualization (Open vSwitch)
+* Virtual switches reside inside the Hypervisor kernel/userspace.
+* **Flow Caching:** Exact match caches bypass the slow generalized routing pipeline.
+    * $\text{Cache Key} = \text{Hash(srcMAC, dstMAC, srcIP, dstIP, TCP\Ports)}$
+
+### 6.3 Key SDN / Cloud Frameworks
+* **VL2:** Separates Location Addresses (LAs - for switches) from Application Addresses (AAs - for tenant VMs). Uses **Valiant Load Balancing (VLB)** to spray traffic across all ECMP paths to defeat unpredictable datacenter traffic matrices.
+* **NVP (Network Virtualization Platform):** Decouples logical networks from physical topology. Central controller pushes localized OpenFlow rules to hypervisor vSwitches.
+* **B4 (Google) & SWAN (Microsoft):** SDN applied to the Wide Area Network (WAN). Pushes link utilization to nearly 100% (compared to traditional 30-40%) by using centralized traffic engineering and centralized algorithms.
+
+---
+
+## 7. DNS & Content Delivery Networks (CDNs)
+
+### 7.1 CDN Traffic Engineering
+CDNs must route users to the "closest" or least loaded replica server. Techniques include:
+1.  **DNS Manipulation:** Local DNS server queries authoritative CDN DNS. CDN returns IP of closest server based on the local DNS server's geo-location.
+2.  **Anycast Routing:** Multiple servers globally advertise the *exact same IP address* via BGP. BGP naturally routes the user to the topologically closest server.
+3.  **URL Rewriting:** Application layer HTML modifies links dynamically (e.g., `cdn.abc.com/video.mp4`).
+
+### 7.2 DNS Resolution Flow & Security
+
+**DNS Record Types:**
+* **A:** Domain $\rightarrow$ IPv4 Address
+* **NS:** Domain $\rightarrow$ Authoritative Nameserver
+* **CNAME:** Alias (Canonical Name)
+* **MX:** Mail Exchange server
+
+**DNS Amplification Attack (DDoS Vector):**
+* **Exploit:** DNS uses UDP (connectionless, easily spoofed source IP).
+* **Algorithm:** Attacker sends tiny DNS query (e.g., 60 bytes) with Source IP spoofed as the *Victim's IP*. DNS server replies with massive payload (e.g., 3000+ bytes) to the Victim.
+* **Amplification Factor:** $\frac{\text{Response Size}}{\text{Request Size}}$ (Can be $50\times$ to over $1000\times$).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Local_DNS as Local Resolver
+    participant Root_DNS as Root (.)
+    participant TLD_DNS as TLD (.edu)
+    participant Auth_DNS as Auth (illinois.edu)
+
+    Client->>Local_DNS: Query: www.illinois.edu (A Record)
+    Local_DNS->>Root_DNS: Ask for .edu NS
+    Root_DNS-->>Local_DNS: Returns TLD NS IP
+    Local_DNS->>TLD_DNS: Ask for illinois.edu NS
+    TLD_DNS-->>Local_DNS: Returns Auth NS IP
+    Local_DNS->>Auth_DNS: Ask for www.illinois.edu A Record
+    Auth_DNS-->>Local_DNS: Returns 192.17.172.3
+    Local_DNS-->>Client: Returns 192.17.172.3
+```
