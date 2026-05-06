@@ -115,11 +115,22 @@ TCP uses packet loss as the primary signal of congestion.
     $$cwnd \leftarrow cwnd \times \left(1 - \frac{\alpha}{2}\right)$$
 
 ### 4.4 Cloud Workloads & Tail Latency
+
 Scale magnifies tail latency. If one task out of thousands is slow, the entire job is delayed.
-* Let $p = \text{Probability a single task finishes on time (e.g., } \le 42 \text{ms})$.
-* Let $n = \text{Number of parallel tasks}$.
-* **Probability the entire job is delayed (fails deadline):**
-    $$Pr[Job > 42\text{ms}] = 1 - p^n$$
+* Let **$p$** = Probability a single task finishes on time (e.g., $\le 42$ms).
+* Let **$q$** = Probability a single task is slow ($1 - p$).
+* Let **$n$** = Number of parallel tasks in the job.
+
+**Probability the entire job is delayed (fails deadline):**
+$$Pr[\text{Job} > 42\text{ms}] = 1 - p^n$$
+
+**Probability that exactly $k$ out of $n$ original requests fail the timer:**
+$$P(X = k) = \binom{n}{k} \cdot q^k \cdot p^{n-k}$$
+*Where "n choose k" is calculated as:*
+$$\binom{n}{k} = \frac{n!}{k!(n - k)!}$$
+
+**Probability of $x$ or more failures:**
+$$P(X \ge x) = 1 - \sum_{k=0}^{x-1} P(X = k)$$
 
 ---
 
