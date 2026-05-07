@@ -131,6 +131,10 @@ $$\binom{n}{k} = \frac{n!}{k!(n - k)!}$$
 
 **Probability of $x$ or more failures:**
 $$P(X \ge x) = 1 - \sum_{k=0}^{x-1} P(X = k)$$
+To calculate the expected (mean) response time of a single request, multiply each possible outcome (latency time) by its probability of occurring and sum the
+
+**Mean Response Time (Expected Delay):**
+To calculate the expected (mean) response time of a single request, multiply each possible outcome (latency time) by its probability of occurring and sum the results. So find the time for all n responses to go fast Time_for_fast*p^n + Time_for_slow*(1 - p^n)$$
 
 ---
 
@@ -414,3 +418,13 @@ While highly secure, DNSSEC has historically suffered from slow adoption due to 
 * Managing cryptographic keys is difficult (key rollover, storage). 
 * If a domain administrator misconfigures their DNSSEC keys, the domain becomes entirely unreachable to validating resolvers, causing self-inflicted outages.
 * The larger response sizes required to transmit the cryptographic keys and signatures make DNSSEC a more potent tool for attackers to use in **DNS Amplification/Reflection DDoS attacks**.
+### 5.3 Deriving the Number of Hosts in a Fat-Tree
+In a $k$-port Fat-Tree (Clos) topology, every switch (Edge, Aggregation, and Core) has exactly $k$ ports. To understand how the network supports a maximum of **$\frac{k^3}{4}$ total servers**, break it down from the bottom up:
+
+* **Edge Switch Connections:** Half of an edge switch's ports connect *down* to hosts ($\frac{k}{2}$), and half connect *up* to aggregation switches ($\frac{k}{2}$).
+* **Servers per Pod:** A single pod contains $\frac{k}{2}$ edge switches. Since each edge switch connects to $\frac{k}{2}$ servers, you multiply them to find the total servers in one pod:
+  $$\text{Servers per Pod} = \frac{k}{2} \times \frac{k}{2} = \frac{k^2}{4}$$
+* **Total Servers:** The fundamental rule of a $k$-port fat-tree is that there are exactly $k$ pods. Multiply the number of pods by the servers per pod:
+  $$\text{Total Servers} = k \times \frac{k^2}{4} = \frac{k^3}{4}$$
+
+*Example: If you build a network using 48-port switches ($k=48$), the network can support a maximum of $\frac{48^3}{4} = 27,648$ servers.*
