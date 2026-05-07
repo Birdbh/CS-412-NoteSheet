@@ -389,3 +389,28 @@ sequenceDiagram
     Router 2->>Dest Host: UDP Packet (TTL = 1)
     Dest Host-->>Sender: ICMP: Port Unreachable (Trace Complete!)
 ```
+## 9.5 DNSSEC (DNS Security Extensions)
+
+Traditional DNS is highly vulnerable to "DNS Spoofing" (or Cache Poisoning), where an attacker intercepts a query and replies with a fake IP address before the real server can. Because traditional DNS uses plaintext UDP without authentication, the client accepts the first response it gets.
+
+**DNSSEC** solves this by adding cryptographic authentication to DNS responses. 
+
+### What it Provides
+* **Authenticity:** Verifies the response actually came from the authoritative server.
+* **Integrity:** Verifies the data wasn't modified in transit.
+* *(Note: It does **not** provide Confidentiality. Queries are still plaintext).*
+
+### How it Works: The Chain of Trust
+DNSSEC relies on **Digital Signatures** (Public/Private Key Cryptography).
+1.  **Zone Signing:** The authoritative server signs its DNS records (like the `A` record) using its Private Key. This signature is stored in an `RRSIG` record.
+2.  **Validation:** When a client (or local resolver) receives the IP address, it also receives the `RRSIG`. It uses the domain's Public Key (stored in a `DNSKEY` record) to verify the signature.
+3.  **The Chain of Trust:** How do we know the Public Key itself isn't fake? The parent zone vouches for it.
+    * The **Root Zone (`.`)** signs the key for the **TLD (`.edu`)**.
+    * The **TLD (`.edu`)** signs the key for the **Domain (`illinois.edu`)**.
+    * The **Domain (`illinois.edu`)** signs the actual **IP Address (A Record)**.
+
+### The Problem with DNSSEC
+While highly secure, DNSSEC has historically suffered from slow adoption due to **complexity**. 
+* Managing cryptographic keys is difficult (key rollover, storage). 
+* If a domain administrator misconfigures their DNSSEC keys, the domain becomes entirely unreachable to validating resolvers, causing self-inflicted outages.
+* The larger response sizes required to transmit the cryptographic keys and signatures make DNSSEC a more potent tool for attackers to use in **DNS Amplification/Reflection DDoS attacks**.
