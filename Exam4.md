@@ -245,3 +245,147 @@ sequenceDiagram
     Auth_DNS-->>Local_DNS: Returns 192.17.172.3
     Local_DNS-->>Client: Returns 192.17.172.3
 ```
+Here is the expanded section on the Internet Architecture and Network Layers. It extracts the core concepts, protocols, and architectural principles (like the "Hourglass Model" and the "End-to-End Argument") straight from your course slides to give you a comprehensive but highly scannable cheat sheet block.
+
+***
+
+## 2. Internet Architecture & Network Layers
+
+The Internet uses a layered architecture to **modularize functionality**. Each protocol builds *only* on the service interface of the protocol in the layer immediately below it. 
+
+### 2.1 The "Internet Hourglass" Model
+The network architecture resembles an hourglass, with **IP (Internet Protocol) at the narrow waist**. 
+* **Above IP (Transport/App):** Massive innovation in applications (HTTP, Skype, BitTorrent) and transport (TCP, UDP, QUIC).
+* **Below IP (Link/Physical):** Massive innovation in physical transmission (Fiber, 5G, Wi-Fi).
+* **The Waist (Network):** IP acts as the universal, minimal service model that joins heterogeneous networks together. It relies on the **End-to-End Argument**: keep the core network dumb/minimal (just best-effort datagram delivery) and put the smarts/complexity (reliability, error checking, congestion control) at the endpoints (hosts).
+
+### 2.2 The 5-Layer Internet Model
+
+| Layer | Name | Primary Responsibility | Key Protocols | Data Unit |
+| :--- | :--- | :--- | :--- | :--- |
+| **L5** | **Application** | "Anything you can dream up." High-level data exchange, application logic, and user interfaces. | HTTP, DNS, SMTP, BGP | Message |
+| **L4** | **Transport** | **Process-to-process** communication. Multiplexing data streams using Port Numbers. | TCP, UDP | Segment / Datagram |
+| **L3** | **Network** | **Host-to-host** communication. Sending packets across a multi-hop internetwork. IP addressing and routing. | IP, ICMP, OSPF | Packet / Datagram |
+| **L2** | **Data Link** | **Hop-to-hop** transfer. Moving data across a single link/channel. Handles framing and bit-level error detection. | Ethernet, Wi-Fi (802.11), ARP | Frame |
+| **L1** | **Physical** | Transmitting raw, discrete bits over a physical transmission medium. | Copper, Fiber, Radio | Bit |
+
+### 2.3 Layer-Specific Details & Concepts
+
+**Layer 4: Transport Layer**
+The transport layer provides logical communication between application processes (A and B) running on different hosts.
+* **Multiplexing:** Uses **Ports** (e.g., Port 80 for HTTP, Port 53 for DNS) to distinguish between multiple processes running on the exact same host IP address.
+* **TCP (Transmission Control Protocol):** Connection-oriented (3-way handshake), reliable byte stream ("what goes in must come out"), provides flow control (RWS) and congestion control (cwnd).
+* **UDP (User Datagram Protocol):** Connectionless, ultra-minimal, unreliable datagram service. Used when startup latency must be minimized (DNS) or when apps cannot wait for packet retransmission (real-time video/gaming).
+
+**Layer 3: Network Layer**
+Splits into two routing paradigms to handle the scale and heterogeneity of the Internet:
+* **Intradomain Routing:** Routing *within* a single administrative domain (e.g., a university or single ISP). Uses protocols like **OSPF** (Link State) or **RIP/EIGRP** (Distance Vector). Focuses on optimal/shortest paths.
+* **Interdomain Routing:** Routing *between* Autonomous Systems (ASes). Uses **BGP** (Path Vector). Focuses on policy, business relationships, and scalability rather than the absolute shortest path.
+
+**Layer 2: Data Link Layer**
+* Must handle the physics of transmission where speeds differ by $1,000,000\times$ and distances range from 1 meter to thousands of kilometers.
+
+## 10. Border Gateway Protocol (BGP)
+
+BGP is a **Path Vector** protocol used for interdomain routing (between Autonomous Systems). Unlike intradomain protocols (OSPF, RIP) that seek the absolute shortest path, BGP focuses on scale, policy, and business relationships.
+
+### eBGP vs. iBGP
+BGP is split into two components to handle external routing and internal distribution.
+
+* **eBGP (External BGP):** Advertises routes *externally* to other Autonomous Systems (ASes). It operates between edge routers in different domains.
+* **iBGP (Internal BGP):** Advertises the routes learned via eBGP to all the other routers *inside* the same AS.
+
+### How They Work Together
+1.  An edge router learns a route to an external destination via an **eBGP session** with a neighboring AS.
+2.  The edge router distributes this route to all internal routers via **iBGP sessions**.
+3.  Because iBGP only provides the *next hop border router*, internal routers use the **Intradomain protocol (e.g., OSPF)** to figure out the best physical link to reach that specific border router.
+
+### iBGP Topology Design
+* **Full Mesh:** Every BGP router in an AS connects to every other BGP router. For $n$ routers, this requires $O(n^2)$ TCP connections. It does not scale well for large networks.
+* **Route Reflectors:** A single router (the reflector) redistributes routes to all other routers. For $n$ routers, this requires only $n-1$ connections, vastly improving scalability.
+
+### BGP Policy & Route Selection Algorithm
+BGP routers do not simply choose the shortest path. They apply local policies (import and export rules) to filter updates and select paths based on a strict hierarchy of attributes:
+
+1.  **Highest LocalPref (Local Preference):** Determined by the local AS. Used to prefer one outbound path over another (e.g., preferring a cheap peer link over an expensive transit link).
+2.  **Shortest AS-Path Length:** The route that traverses the fewest Autonomous Systems.
+3.  **Lowest MED (Multi-Exit Discriminator):** A hint from an external neighbor about which entry point they prefer you use.
+4.  **eBGP over iBGP:** Prefer paths learned directly from external peers over those learned internally.
+5.  **Lowest IGP Cost:** Break ties by picking the path that has the lowest internal routing cost to reach the next-hop border router.
+
+```mermaid
+graph TD
+    subgraph AS 100
+        R1[Router 1]
+        R2[Router 2]
+        R1 <-->|iBGP Session| R2
+        R1 <--->|OSPF| R2
+    end
+    
+    subgraph AS 200
+        R3[Router 3]
+    end
+    
+    subgraph AS 300
+        R4[Router 4]
+    end
+
+    R1 <-->|eBGP Session| R3
+    R2 <-->|eBGP Session| R4
+```
+* **Framing:** Groups a sequence of raw bits into a larger, recognizable unit (a Frame) so the receiver knows where the data starts and ends.
+* Identifies devices using physical **MAC (Media Access Control) Addresses**, which are location-independent, unlike hierarchical IP addresses.
+
+Here is the breakdown of ICMP (Internet Control Message Protocol) formatted to perfectly match the rest of your cheat sheet. It includes exactly what it is, why it's used, its format, and a step-by-step breakdown of how `traceroute` leverages it.
+
+***
+
+## 11. ICMP (Internet Control Message Protocol) & Diagnostics
+
+Because IP relies on "best-effort" datagram delivery, packets can be dropped, delayed, or routed in loops without the sender natively knowing. **ICMP is the error reporting and diagnostic mechanism for IP.**
+
+### 11.1 What it is & How it is Encapsulated
+* **Layer:** Network Layer (L3).
+* **Encapsulation:** Even though it is a Network Layer protocol, ICMP messages are encapsulated **inside standard IP packets** (IP Header Protocol Field = `1`).
+* **Why it is used:** To provide feedback about problems in the communication environment (e.g., unreachable hosts, TTL expirations, fragmented packet issues) and to perform active end-to-end network probes (like `ping` and `traceroute`).
+
+### 11.2 ICMP Message Format
+| Field | Description |
+| :--- | :--- |
+| **Type** | Broad category of the message (e.g., Echo Request, Time Exceeded, Destination Unreachable). |
+| **Code** | Specific sub-type of the error providing exact context (e.g., under Destination Unreachable, a code specifies *Port Unreachable* or *Network Unreachable*). |
+| **Checksum** | Error-checking data to verify the integrity of the ICMP message. |
+| **Data (Payload)** | For error messages, this usually contains the IP header and the first 8 bytes of the *original* datagram that caused the error. This allows the sender to match the error to the specific process/packet that failed. |
+
+### 11.3 How it is used: The `Traceroute` Algorithm
+Traceroute uses a clever manipulation of IP headers and ICMP error messages to discover the exact path of Autonomous Systems (routers) a packet takes across the Internet.
+
+**The Algorithm Steps:**
+1.  **Send:** The source sends a dummy message (usually a UDP packet to an intentionally invalid/unused port) to the destination, starting with the **IP Time To Live (TTL) = 1**.
+2.  **Hop 1 Fails:** The first router receives the packet, decrements the TTL to `0`, drops the packet (to prevent infinite loops), and replies to the sender with an **ICMP Time Exceeded** message. The sender now knows the IP of Hop 1.
+3.  **Increment & Repeat:** The sender sends another dummy packet, this time with **TTL = 2**. It passes the first router, but the *second* router drops it and sends the **ICMP Time Exceeded** message. The sender records Hop 2.
+4.  **Destination Reached:** The sender keeps incrementing the TTL. Eventually, the packet reaches the actual destination host.
+5.  **Termination:** Because the dummy UDP packet was sent to an invalid port, the destination host drops the packet and replies with an **ICMP Port Unreachable** message. When the sender receives *this* specific ICMP code, it knows the trace is completely finished.
+
+### Traceroute Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Sender
+    participant Router 1
+    participant Router 2
+    participant Dest Host
+
+    Sender->>Router 1: UDP Packet (TTL = 1)
+    Router 1-->>Sender: ICMP: Time Exceeded (Hop 1 logged)
+    
+    Sender->>Router 1: UDP Packet (TTL = 2)
+    Router 1->>Router 2: UDP Packet (TTL = 1)
+    Router 2-->>Sender: ICMP: Time Exceeded (Hop 2 logged)
+
+    Sender->>Router 1: UDP Packet (TTL = 3)
+    Router 1->>Router 2: UDP Packet (TTL = 2)
+    Router 2->>Dest Host: UDP Packet (TTL = 1)
+    Dest Host-->>Sender: ICMP: Port Unreachable (Trace Complete!)
+```
