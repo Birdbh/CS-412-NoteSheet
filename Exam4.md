@@ -428,3 +428,112 @@ In a $k$-port Fat-Tree (Clos) topology, every switch (Edge, Aggregation, and Cor
   $$\text{Total Servers} = k \times \frac{k^2}{4} = \frac{k^3}{4}$$
 
 *Example: If you build a network using 48-port switches ($k=48$), the network can support a maximum of $\frac{48^3}{4} = 27,648$ servers.*
+
+Here are five additional Mermaid diagrams illustrating key concepts from the course content that you can add to your cheat sheet for the exam.
+
+### 1. TCP 3-Way Handshake
+This sequence diagram shows the process of establishing a reliable connection in TCP, a common exam topic.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Server: SYN (seq=x)
+    Note over Client,Server: Client requests connection
+    Server-->>Client: SYN-ACK (seq=y, ack=x+1)
+    Note over Client,Server: Server acknowledges request and asks to open its own channel
+    Client->>Server: ACK (ack=y+1)
+    Note over Client,Server: Client acknowledges server's request. Connection established.
+```
+
+### 2. Distance Vector Routing (Bellman-Ford Updates)
+This diagram illustrates the core concept of Distance Vector routing, where a router updates its routing table based on information from its immediate neighbors.
+
+```mermaid
+graph TD
+    A((Router A))
+    B((Router B))
+    C((Router C))
+    D((Destination D))
+
+    B -- "Cost: 2" --> D
+    C -- "Cost: 5" --> D
+    A -- "Cost: 1" --> B
+    A -- "Cost: 3" --> C
+
+    Note right of A: A calculates path to D:<br>Via B: 1 + 2 = 3<br>Via C: 3 + 5 = 8<br>A chooses path via B.
+```
+
+### 3. TCP Incast Problem
+This diagram visualizes the "Scatter-Gather" traffic pattern that leads to the TCP Incast problem, common in data centers (e.g., MapReduce, Search).
+
+```mermaid
+graph TD
+    Agg[Aggregator Node]
+    W1[Worker 1]
+    W2[Worker 2]
+    W3[Worker 3]
+    Wn[Worker N (up to 1000s)]
+    Switch[Top of Rack Switch]
+
+    Agg -- "1. Request Data" --> Switch
+    Switch -- "Scatter" --> W1
+    Switch -.-> W2
+    Switch -.-> W3
+    Switch -.-> Wn
+
+    W1 -- "2. Send Response" --> Switch
+    W2 -- "Send Response" --> Switch
+    W3 -- "Send Response" --> Switch
+    Wn -- "Send Response" --> Switch
+
+    Note right of Switch: Switch buffer instantly overflows<br>due to simultaneous massive fan-in (Gather).<br>Packets drop, causing TCP timeouts.
+    
+    Switch -- "Bottlenecked Delivery" --> Agg
+```
+
+### 4. SDN Architecture (Separation of Planes)
+This diagram highlights the fundamental architectural shift in Software-Defined Networking, separating the "brain" (Control Plane) from the "brawn" (Data Plane).
+
+```mermaid
+graph TD
+    subgraph Control Plane (Software)
+        C[Logically Centralized SDN Controller]
+        App1[Routing App]
+        App2[Load Balancing App]
+        App3[Firewall App]
+        
+        App1 --> C
+        App2 --> C
+        App3 --> C
+    end
+
+    subgraph Data Plane (Hardware)
+        S1[Dumb Switch 1]
+        S2[Dumb Switch 2]
+        S3[Dumb Switch 3]
+        
+        S1 --- S2
+        S2 --- S3
+    end
+
+    C -- "OpenFlow / API (Pushes Forwarding Rules)" --> S1
+    C -- "OpenFlow / API" --> S2
+    C -- "OpenFlow / API" --> S3
+```
+
+### 5. Open vSwitch (OVS) Flow Caching
+This flow chart demonstrates how virtual switches on hosts achieve high performance by bypassing the slow general routing pipeline for established flows.
+
+```mermaid
+graph TD
+    Start[Packet Arrives at vSwitch] --> CheckCache{Match in Exact-Match Cache? <br> (Kernel Space)}
+    
+    CheckCache -- Yes (Fast Path) --> Forward[Forward Packet]
+    
+    CheckCache -- No (Slow Path) --> Userspace[Send to Userspace Routing Pipeline]
+    Userspace --> Compute[Compute Action (e.g., Route, Drop, Tunnel)]
+    Compute --> UpdateCache[Install New Rule in Kernel Cache]
+    UpdateCache --> Forward
+```
